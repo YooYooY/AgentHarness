@@ -1,0 +1,20 @@
+[project]
+name = "project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "YooYooY", email = "744534984cwl@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=2.52.0",
+    "python-dotenv>=1.2.2",
+]
+
+[project.scripts]
+project = "project:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
