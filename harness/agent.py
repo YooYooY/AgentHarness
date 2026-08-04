@@ -1,6 +1,6 @@
 import json
 from config import DEFAULT_MAX_TOKENS, MODEL_ID
-from permission import check_permission
+from hooks import trigger_hooks
 from tools.executor import exectue_tool
 from llm import call_llm
 from prompt import get_system_prompt
@@ -18,21 +18,29 @@ def agent_loop(messages: list):
         assistant = choice.message
         messages.append(assistant_message_dict(assistant))
         if not assistant.tool_calls:
+            force = trigger_hooks("Stop", messages)
+            if force:
+                messages.append({"role": "user", "content": force})
+                continue
             return
         for tool_call in assistant.tool_calls:
             name = tool_call.function.name
             args = json.loads(tool_call.function.arguments or "{}")
-            log.info(f"🔧 tool: {name} {json.dumps(args, ensure_ascii=False)}")
-            # check permission
-            reason = check_permission(name, args)
-            if reason is not None:
-                log.warn(f"\n⛔ {reason}")
+
+            blocked = trigger_hooks("PreToolUse", name, args)
+            if blocked:
+                log.warn(f"\n⛔ str{blocked}")
                 messages.append(
-                    {"role": "tool", "tool_call_id": tool_call.id, "content": reason}
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": str(blocked),
+                    }
                 )
                 continue
+
             output = exectue_tool(name, args)
-            log.cyan(f"🍵 Tool output: {output}")
+            trigger_hooks("PostToolUse", name, args, output)
             messages.append(
                 {"role": "tool", "tool_call_id": tool_call.id, "content": output}
             )

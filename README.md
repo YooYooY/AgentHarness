@@ -56,3 +56,13 @@ What files are in the current directory? (Read-only, all will pass)
 
 Use the write_file tool to write an empty text file named hello.txt to the Desktop directory (write outside the working directory, triggering gate)
 
+### Hooks
+
+Cross-cutting behavior belongs around the loop, not tangled inside it.
+
+Try these prompts:
+
+- Read the file `README.md` (should pass directly, observe the hook logs)
+- Create a file named test.txt (after passing, observe if PostToolUse is triggered)
+- Delete all files in the tmp directory (bash + rm will trigger a permission hook)
+
