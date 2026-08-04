@@ -1,5 +1,6 @@
 import inspect
 from tools.handlers import TOOL_HANDLERS
+from utils import log
 
 
 def exectue_tool(name: str, args: dict) -> str:
@@ -19,6 +20,6 @@ def exectue_tool(name: str, args: dict) -> str:
         sig = inspect.signature(handler)
         bound = sig.bind(**args)
     except TypeError as e:
-        return f"Invalid arguments: {e}"
+        return log.error(f"Invalid arguments: {e}")
 
     return handler(**bound.arguments)

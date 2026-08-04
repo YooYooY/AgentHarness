@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -13,3 +14,10 @@ client = OpenAI(
 )
 
 DEFAULT_MAX_TOKENS = 8000
+
+WORKDIR = Path.cwd()
+
+# Set UTF8 code
+os.system("chcp 65001")
+
+TEXT_ENCODING = "utf-8"

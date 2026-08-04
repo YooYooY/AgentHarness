@@ -1,7 +1,9 @@
 import os
+import glob as g
 import subprocess
 
-from utils import decode_subprocess_output, log
+from config import TEXT_ENCODING, WORKDIR
+from utils import decode_subprocess_output, log, safe_path
 
 
 def run_bash(command: str)->str:
@@ -24,6 +26,55 @@ def run_bash(command: str)->str:
     except (FileNotFoundError, OSError) as e:
         return f"Error: {str(e)}"
 
+def run_read(path: str, limit:int | None = None) -> str:
+    try:
+        lines = safe_path(path).read_text(encoding=TEXT_ENCODING).splitlines()
+        if limit and lines > len(lines):
+          lines = lines[:limit] + [f"...(There are {len(lines)-limit} left)"]
+        return "\n".join(lines)
+    except Exception as e:
+        return log.error(str(e))
+
+def run_write(path: str, content: str)->str:
+    try:
+        file_path = safe_path(path)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_text(content, encoding=TEXT_ENCODING)
+        return log.cyan(f"📚 Wrote {len(content)} bytes to {path}")
+
+    except Exception as e:
+        return log.error(f"Error: {str(e)}")
+
+
+def run_edit(path: str, old_text: str, new_text: str)->str:
+    try:
+        file_path = safe_path(path)
+        text = file_path.read_text()
+        if old_text not in text:
+            return log.error(f"Error: text not found")
+        file_path.write_text(
+            text.replace(old_text, new_text, 1), encoding=TEXT_ENCODING
+        )
+        return log.info("✌️: Edited {path}")
+    except Exception as e:
+        return log.error(f"Error: {str(e)}")
+
+
+def run_glob(pattern: str)->str:
+    try:
+        results = []
+        for match in g.glob(pattern, root_dir = WORKDIR):
+            if (WORKDIR / match).resolve().is_relative_to(WORKDIR):
+                results.append(match)
+        return "\n".join(results) if results else "(No match)"
+    except Exception as e:
+        return log.error(f"Error: {str(e)}")
+
+
 TOOL_HANDLERS = {
-  "bash": run_bash
+  "bash": run_bash,
+  "read_file": run_read,
+  "write_file": run_write,
+  "edit_file": run_edit,
+  "glob": run_glob
 }
