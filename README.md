@@ -46,3 +46,13 @@ Try these prompts:
 
 Check Permissions Before Execution
 
+Try these prompts:
+
+Create a file named test.txt in the current directory (should pass directly)
+
+Delete all temporary files in the tmp directory (bash + rm will trigger gate)
+
+What files are in the current directory? (Read-only, all will pass)
+
+Use the write_file tool to write an empty text file named hello.txt to the Desktop directory (write outside the working directory, triggering gate)
+
