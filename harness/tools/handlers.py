@@ -7,7 +7,7 @@ from utils import decode_subprocess_output, log, safe_path
 
 
 def run_bash(command: str)->str:
-    log.blue(f"run bash > {command}")
+    log.info(f"run bash > {command}")
     dangerous = ["rm -rf", "sudo", "shutdown", "reboot", "> /dev/"]
     if any(d in command for d in dangerous):
         return "Error: Dangerous command has been blocked!"

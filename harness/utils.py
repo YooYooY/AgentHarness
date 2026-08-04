@@ -45,10 +45,13 @@ class Logger:
         return message
 
     def info(self, *values, **kwargs) -> None:
-        return self._print("blue", *values, **kwargs)
+        return self._print("yellow", *values, **kwargs)
 
     def error(self, *values, **kwargs) -> None:
         return self._print("red", *values, **kwargs)
+
+    def warn(self, *values, **kwargs) -> None:
+        return self._print("cyan", *values, **kwargs)
 
     def red(self, *values, **kwargs) -> None:
         return self._print("red", *values, **kwargs)

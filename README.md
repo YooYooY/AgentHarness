@@ -11,7 +11,7 @@ Implemented:
 - Evaluation framework
 
 
-### [X] Simply Agent Loop
+### Simply Agent Loop
 
 verify: 
 ```
@@ -25,7 +25,7 @@ Try these prompts:
 - List all Python files in the current directory
 - What is the current git branch?
 
-### [X] Tool Use
+### Tool Use
 
 Add a Tool, Add Just One Line
 
@@ -41,3 +41,8 @@ Try these prompts:
 - Create a file named test.py that prints "hello", then read that file.
 - Find all Python files in the current directory.
 - Read both README.md and pyproject.toml, then generate a summary file.
+
+### Permission
+
+Check Permissions Before Execution
+

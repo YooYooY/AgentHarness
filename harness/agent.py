@@ -1,5 +1,6 @@
 import json
 from config import DEFAULT_MAX_TOKENS, MODEL_ID
+from permission import check_permission
 from tools.executor import exectue_tool
 from llm import call_llm
 from prompt import get_system_prompt
@@ -21,8 +22,17 @@ def agent_loop(messages: list):
         for tool_call in assistant.tool_calls:
             name = tool_call.function.name
             args = json.loads(tool_call.function.arguments or "{}")
-            log.magenta(f"🔧 tool: {name} {json.dumps(args, ensure_ascii=False)}")
+            log.info(f"🔧 tool: {name} {json.dumps(args, ensure_ascii=False)}")
+            # check permission
+            reason = check_permission(name, args)
+            if reason is not None:
+                log.warn(f"\n⛔ {reason}")
+                messages.append(
+                    {"role": "tool", "tool_call_id": tool_call.id, "content": reason}
+                )
+                continue
             output = exectue_tool(name, args)
+            log.cyan(f"🍵 Tool output: {output}")
             messages.append(
                 {"role": "tool", "tool_call_id": tool_call.id, "content": output}
             )
