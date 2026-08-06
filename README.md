@@ -66,3 +66,12 @@ Try these prompts:
 - Create a file named test.txt (after passing, observe if PostToolUse is triggered)
 - Delete all files in the tmp directory (bash + rm will trigger a permission hook)
 
+### TodoWrite
+
+Explicit plans keep long-running work visible and correctable.
+
+Try these prompts:
+
+- Refactor `example/hello.py`: Add type annotations, docstrings, and main protection (list the 3 steps first, then execute)
+- Create a Python package under `example/demo_pkg` containing `__init__.py`, `utils.py`, and `tests/test_utils.py`
+- Inspect all Python files under example and fix any code style issues.

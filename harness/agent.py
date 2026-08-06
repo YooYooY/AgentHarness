@@ -6,17 +6,27 @@ from llm import call_llm
 from prompt import get_system_prompt
 from utils import assistant_message_dict, log
 
+rounds_since_todo = 0
+
 
 def agent_loop(messages: list):
+    global rounds_since_todo
     max_tokens = DEFAULT_MAX_TOKENS
     model = MODEL_ID
     # Continue until the model returns a response without tool calls.
     while True:
         system = get_system_prompt()
+        if rounds_since_todo >= 3 and messages:
+            messages.append(
+                {"role": "user", "content": "<remider>Update your todos.</remider>"}
+            )
+            log.info("💡 REMIDER: Update your todos.")
+            rounds_since_todo = 0
         response = call_llm(system, messages, max_tokens, model)
         choice = response.choices[0]
         assistant = choice.message
         messages.append(assistant_message_dict(assistant))
+        rounds_since_todo += 1
         if not assistant.tool_calls:
             force = trigger_hooks("Stop", messages)
             if force:
@@ -28,6 +38,8 @@ def agent_loop(messages: list):
             args = json.loads(tool_call.function.arguments or "{}")
 
             blocked = trigger_hooks("PreToolUse", name, args)
+            if name == "todo_write":
+                rounds_since_todo = 0
             if blocked:
                 log.warn(f"\n⛔ str{blocked}")
                 messages.append(

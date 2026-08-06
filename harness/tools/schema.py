@@ -50,4 +50,25 @@ TOOLS = [
         {"pattern": {"type": "string"}},
         ["pattern"],
     ),
+    _fn_tool(
+        "todo_write",
+        "Create and manage a task list ...",
+        {
+            "todos": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "content": {"type": "string"},
+                        "status": {
+                            "type": "string",
+                            "enum": ["pending", "in_progress", "completed"],
+                        },
+                    },
+                    "required": ["content", "status"],
+                },
+            }
+        },
+        ["todos"],
+    ),
 ]

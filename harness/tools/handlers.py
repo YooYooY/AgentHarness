@@ -1,52 +1,53 @@
+import enum
 import os
 import glob as g
 import subprocess
+from typing import Literal, TypedDict
 
 from config import TEXT_ENCODING, WORKDIR
 from utils import decode_subprocess_output, log, safe_path
 
 
-def run_bash(command: str)->str:
+def run_bash(command: str) -> str:
     log.info(f"run bash > {command}")
     dangerous = ["rm -rf", "sudo", "shutdown", "reboot", "> /dev/"]
     if any(d in command for d in dangerous):
         return "Error: Dangerous command has been blocked!"
     try:
         result = subprocess.run(
-        command,
-        shell=True,
-        cwd=os.getcwd(),
-        capture_output=True,
-        timeout=120
-      )
-        out = decode_subprocess_output((result.stdout or b"") +result.stderr or b"")
+            command, shell=True, cwd=os.getcwd(), capture_output=True, timeout=120
+        )
+        out = decode_subprocess_output((result.stdout or b"") + result.stderr or b"")
         return out[:500000] if out else "(empty output)"
     except subprocess.TimeoutExpired:
         return "Error: timeout (120 secs)"
     except (FileNotFoundError, OSError) as e:
         return f"Error: {str(e)}"
 
-def run_read(path: str, limit:int | None = None) -> str:
+
+def run_read(path: str, limit: int | None = None) -> str:
     try:
         lines = safe_path(path).read_text(encoding=TEXT_ENCODING).splitlines()
         if limit and lines > len(lines):
-          lines = lines[:limit] + [f"...(There are {len(lines)-limit} left)"]
+            lines = lines[:limit] + [f"...(There are {len(lines)-limit} left)"]
+        log.cyan(f"👀 reading content {path}")
         return "\n".join(lines)
     except Exception as e:
         return log.error(str(e))
 
-def run_write(path: str, content: str)->str:
+
+def run_write(path: str, content: str) -> str:
     try:
         file_path = safe_path(path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content, encoding=TEXT_ENCODING)
-        return log.cyan(f"📚 Wrote {len(content)} bytes to {path}")
+        return log.cyan(f"✍️ Wrote {len(content)} bytes to {path}")
 
     except Exception as e:
         return log.error(f"Error: {str(e)}")
 
 
-def run_edit(path: str, old_text: str, new_text: str)->str:
+def run_edit(path: str, old_text: str, new_text: str) -> str:
     try:
         file_path = safe_path(path)
         text = file_path.read_text()
@@ -55,26 +56,55 @@ def run_edit(path: str, old_text: str, new_text: str)->str:
         file_path.write_text(
             text.replace(old_text, new_text, 1), encoding=TEXT_ENCODING
         )
-        return log.info("✌️: Edited {path}")
+        return log.info("📝: Edited {path}")
     except Exception as e:
         return log.error(f"Error: {str(e)}")
 
 
-def run_glob(pattern: str)->str:
+def run_glob(pattern: str) -> str:
     try:
         results = []
-        for match in g.glob(pattern, root_dir = WORKDIR):
+        for match in g.glob(pattern, root_dir=WORKDIR):
             if (WORKDIR / match).resolve().is_relative_to(WORKDIR):
                 results.append(match)
+        log.info("🔍: search content {path}")
         return "\n".join(results) if results else "(No match)"
     except Exception as e:
         return log.error(f"Error: {str(e)}")
 
 
+CURRENT_TODOS: list[dict] = []
+CURRENT_ICON_CONFIG = {
+    "pending": "⚪️ pending",
+    "in_progress": "🟢 in_progress",
+    "completed": "✅ completed",
+}
+
+
+class Todo(TypedDict):
+    content: str
+    status: Literal["pending", "in_progress", "completed"]
+
+
+def run_todo_write(todos: Todo) -> str:
+    global CURRENT_TODOS
+    for index, todo in enumerate(todos):
+        if "content" not in todo or "status" not in todo:
+            return log.error(f"Error:{todo[index]} miss parameters content or")
+    CURRENT_TODOS = todos
+    lines = ["\n Current Tasks"]
+    for t in CURRENT_TODOS:
+        icon = CURRENT_ICON_CONFIG[t["status"]]
+        lines.append(f"[{icon}]: {t['content']}")
+    log.info("\n".join(lines))
+    return f"Updated {len(CURRENT_TODOS)} tasks"
+
+
 TOOL_HANDLERS = {
-  "bash": run_bash,
-  "read_file": run_read,
-  "write_file": run_write,
-  "edit_file": run_edit,
-  "glob": run_glob
+    "bash": run_bash,
+    "read_file": run_read,
+    "write_file": run_write,
+    "edit_file": run_edit,
+    "glob": run_glob,
+    "todo_write": run_todo_write,
 }
