@@ -26,6 +26,13 @@ def safe_path(p: str)->Path:
         raise ValueError(log.error(f"Beyond the workplace: {p}"))
     return path
 
+def extract_text(content)->str:
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    return str(content)
+
 class Logger:
     _STYLES = {
         "info": "yellow",
