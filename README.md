@@ -75,3 +75,17 @@ Try these prompts:
 - Refactor `example/hello.py`: Add type annotations, docstrings, and main protection (list the 3 steps first, then execute)
 - Create a Python package under `example/demo_pkg` containing `__init__.py`, `utils.py`, and `tests/test_utils.py`
 - Inspect all Python files under example and fix any code style issues.
+
+
+### Subagent
+
+Break Large Tasks into Small Ones with Clean Context
+
+> Subagents give each subtask a clean message history while preserving the main thread.
+
+Try these prompts:
+
+- Use subtasks to find which third-party modules are installed in this project (the sub-Agent reads the files, the main Agent only receives the conclusions).
+- Use the `spawn_subagent` tool to read all `.py` files in the `agents/` directory and summarize the function of each file.
+- Use the `spawn_subagent` tool to create `example/string_tools.py` containing the `slugify(text: str)` function, and then have the main Agent verify this file.
+

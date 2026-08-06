@@ -47,7 +47,8 @@ def run_spawn_subagent(description: str):
             break
         for tool_call in assistant.tool_calls:
             name = tool_call.function.name
-            args = json.load(tool_call.function.arguments or "{}")
+            args_str = tool_call.function.arguments
+            args = json.loads(args_str or "{}")
             blocked = trigger_hooks("PreToolUse", name, args)
             if blocked:
                 messages.append(
