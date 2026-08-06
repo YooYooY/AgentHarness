@@ -9,7 +9,7 @@ def main():
     history = []
     while True:
         try:
-            query = prompt("You: ", multiline=True)
+            query = prompt("You: ")
         except (EOFError, KeyboardInterrupt):
             break
         if query.strip().lower() in ("q", "quit", "exit", ""):
