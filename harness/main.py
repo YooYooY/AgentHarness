@@ -1,6 +1,7 @@
 from agent import agent_loop
 from hooks import trigger_user_prompt_hooks
 from utils import log
+from prompt_toolkit import prompt
 
 
 def main():
@@ -8,7 +9,7 @@ def main():
     history = []
     while True:
         try:
-            query = input("\x1b[36m] \x1b[0m")
+            query = prompt("You: ", multiline=True)
         except (EOFError, KeyboardInterrupt):
             break
         if query.strip().lower() in ("q", "quit", "exit", ""):

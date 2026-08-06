@@ -1,7 +1,8 @@
 from pathlib import Path
-
+from rich.console import Console
 from config import WORKDIR
 
+console = Console()
 
 def assistant_message_dict(message) -> dict:
     data = message.model_dump(exclude_none=True)
@@ -26,49 +27,55 @@ def safe_path(p: str)->Path:
     return path
 
 class Logger:
-    _RESET = "\033[0m"
-    _COLORS = {
-        "red": "\033[31m",
-        "green": "\033[32m",
-        "yellow": "\033[33m",
-        "blue": "\033[34m",
-        "magenta": "\033[35m",
-        "cyan": "\033[36m",
+    _STYLES = {
+        "info": "yellow",
+        "error": "bold red",
+        "warn": "cyan",
+        "red": "red",
+        "green": "green",
+        "yellow": "yellow",
+        "blue": "blue",
+        "magenta": "magenta",
+        "cyan": "cyan",
     }
 
-    def _print(self, color: str, *values, **kwargs) -> None:
-        separator = kwargs.pop("sep", " ")
-        if separator is None:
-            separator = " "
+    def __init__(self, output: Console | None = None) -> None:
+        self.console = output or console
+
+    def _print(self, level: str, *values: object, **kwargs) -> str:
+        separator = kwargs.pop("sep", " ") or " "
         message = separator.join(str(value) for value in values)
-        print(f"{self._COLORS[color]}{message}{self._RESET}", **kwargs)
+        kwargs.setdefault("style", self._STYLES[level])
+        kwargs.setdefault("markup", False)
+        kwargs.setdefault("highlight", False)
+        self.console.print(message, **kwargs)
         return message
 
-    def info(self, *values, **kwargs) -> None:
-        return self._print("yellow", *values, **kwargs)
+    def info(self, *values: object, **kwargs) -> str:
+        return self._print("info", *values, **kwargs)
 
-    def error(self, *values, **kwargs) -> None:
+    def error(self, *values: object, **kwargs) -> str:
+        return self._print("error", *values, **kwargs)
+
+    def warn(self, *values: object, **kwargs) -> str:
+        return self._print("warn", *values, **kwargs)
+
+    def red(self, *values: object, **kwargs) -> str:
         return self._print("red", *values, **kwargs)
 
-    def warn(self, *values, **kwargs) -> None:
-        return self._print("cyan", *values, **kwargs)
-
-    def red(self, *values, **kwargs) -> None:
-        return self._print("red", *values, **kwargs)
-
-    def green(self, *values, **kwargs) -> None:
+    def green(self, *values: object, **kwargs) -> str:
         return self._print("green", *values, **kwargs)
 
-    def yellow(self, *values, **kwargs) -> None:
+    def yellow(self, *values: object, **kwargs) -> str:
         return self._print("yellow", *values, **kwargs)
 
-    def blue(self, *values, **kwargs) -> None:
+    def blue(self, *values: object, **kwargs) -> str:
         return self._print("blue", *values, **kwargs)
 
-    def magenta(self, *values, **kwargs) -> None:
+    def magenta(self, *values: object, **kwargs) -> str:
         return self._print("magenta", *values, **kwargs)
 
-    def cyan(self, *values, **kwargs) -> None:
+    def cyan(self, *values: object, **kwargs) -> str:
         return self._print("cyan", *values, **kwargs)
 
 
