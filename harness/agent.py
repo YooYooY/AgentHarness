@@ -16,7 +16,7 @@ def agent_loop(messages: list):
     # Continue until the model returns a response without tool calls.
     while True:
         system = get_system_prompt()
-        if rounds_since_todo >= 3 and messages:
+        if rounds_since_todo >= 5 and messages:
             messages.append(
                 {"role": "user", "content": "<remider>Update your todos.</remider>"}
             )

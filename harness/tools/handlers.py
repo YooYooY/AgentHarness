@@ -73,18 +73,16 @@ def run_glob(pattern: str) -> str:
         return log.error(f"Error: {str(e)}")
 
 
+class Todo(TypedDict):
+    content: str
+    status: Literal["pending", "in_progress", "completed"]
+
 CURRENT_TODOS: list[dict] = []
 CURRENT_ICON_CONFIG = {
     "pending": "⚪️ pending",
     "in_progress": "🟢 in_progress",
     "completed": "✅ completed",
 }
-
-
-class Todo(TypedDict):
-    content: str
-    status: Literal["pending", "in_progress", "completed"]
-
 
 def run_todo_write(todos: Todo) -> str:
     global CURRENT_TODOS
