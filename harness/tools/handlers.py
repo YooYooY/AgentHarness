@@ -1,10 +1,10 @@
-import enum
 import os
 import glob as g
 import subprocess
 from typing import Literal, TypedDict
 
 from config import TEXT_ENCODING, WORKDIR
+from skills import run_load_skill
 from utils import decode_subprocess_output, log, safe_path
 
 
@@ -105,4 +105,5 @@ TOOL_HANDLERS = {
     "edit_file": run_edit,
     "glob": run_glob,
     "todo_write": run_todo_write,
+    "load_skill": run_load_skill
 }

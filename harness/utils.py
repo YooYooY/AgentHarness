@@ -4,6 +4,7 @@ from config import WORKDIR
 
 console = Console()
 
+
 def assistant_message_dict(message) -> dict:
     data = message.model_dump(exclude_none=True)
     data["role"] = "assistant"
@@ -20,18 +21,21 @@ def decode_subprocess_output(data: bytes | None) -> str:
             continue
     return data.decode("utf-8", errors="replace")
 
-def safe_path(p: str)->Path:
+
+def safe_path(p: str) -> Path:
     path = (WORKDIR / p).resolve()
     if not path.is_relative_to(WORKDIR):
         raise ValueError(log.error(f"Beyond the workplace: {p}"))
     return path
 
-def extract_text(content)->str:
+
+def extract_text(content) -> str:
     if content is None:
         return ""
     if isinstance(content, str):
         return content
     return str(content)
+
 
 class Logger:
     _STYLES = {
@@ -87,3 +91,17 @@ class Logger:
 
 
 log = Logger()
+
+
+def parse_frontmatter(text: str):
+    if not text.startswith("---"):
+        return {}, text
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return {}, text
+    meta = {}
+    for line in parts[1].strip().splitlines():
+        if ":" in line:
+            k,v = line.split(":", 1)
+            meta[k.strip()] = v.strip().strip('"').strip("'")
+    return meta, parts[2].strip()

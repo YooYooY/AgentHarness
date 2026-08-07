@@ -18,3 +18,5 @@ DEFAULT_MAX_TOKENS = 8000
 WORKDIR = Path.cwd()
 
 TEXT_ENCODING = "utf-8"
+
+SKILLS_DIR = WORKDIR / "skills"

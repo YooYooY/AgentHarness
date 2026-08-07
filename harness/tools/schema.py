@@ -81,4 +81,10 @@ TOOLS = [
         {"description": {"type": "string"}},
         ["description"],
     ),
+    _fn_tool(
+        "load_skill",
+        "Load the full content of the skill by name",
+        {"name": {"type": "string"}},
+        ["name"],
+    ),
 ]

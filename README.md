@@ -89,3 +89,14 @@ Try these prompts:
 - Use the `spawn_subagent` tool to read all `.py` files in the `agents/` directory and summarize the function of each file.
 - Use the `spawn_subagent` tool to create `example/string_tools.py` containing the `slugify(text: str)` function, and then have the main Agent verify this file.
 
+### Skills
+
+Load Only When Needed
+
+> Inject specialized knowledge only when the task actually needs it.
+
+Try these prompts:
+- What skills are available?
+- Load the code-review skill and follow its instructions
+- I need to do a code review -- load the relevant skill first
+
