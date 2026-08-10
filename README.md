@@ -100,3 +100,12 @@ Try these prompts:
 - Load the code-review skill and follow its instructions
 - I need to do a code review -- load the relevant skill first
 
+### Context Compact
+
+Context Will Fill Up
+
+> compression keeps the conversation usable when the context window gets crowded.
+
+Try these prompts:
+- Read the food.md file in the current directory and summarize its contents for me.
+

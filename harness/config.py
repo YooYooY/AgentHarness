@@ -20,3 +20,13 @@ WORKDIR = Path.cwd()
 TEXT_ENCODING = "utf-8"
 
 SKILLS_DIR = WORKDIR / "skills"
+
+MAX_BYTES = 10000
+
+PERSIST_THRESHOLD = 1000
+
+TOOL_RESULT_DIR = WORKDIR / ".task_outputs" / "tool_results"
+
+MAX_MESSAGE_LENGTH = 0
+
+KEEP_RECENT = 3
