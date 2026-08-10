@@ -12,6 +12,7 @@ PROMPT_SECTIONS = {
         "All destructive actions require user approval. "
         "If a file tool rejects your request, do not bypass it using other methods "
         "such as bash, Python, or Node.js."
+        "When the context is too long, you can use the compact tool."
     ),
     "workspace": f"workspace: {WORKDIR}",
     "skill": "Use load_skill to get full details when needed.",

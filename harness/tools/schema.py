@@ -87,4 +87,12 @@ TOOLS = [
         {"name": {"type": "string"}},
         ["name"],
     ),
+    _fn_tool(
+        "compact",
+        "Summarize earlier dialogues to free up context space.",
+        {
+            "focus": {"type": "string"},
+        },
+        [],
+    ),
 ]
