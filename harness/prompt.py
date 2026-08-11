@@ -1,5 +1,6 @@
-from config import WORKDIR
+from config import MEMORY_INDEX, TEXT_ENCODING, WORKDIR
 from skills import SKILL_REGISTRY
+from utils import log
 
 
 PROMPT_SECTIONS = {
@@ -16,6 +17,11 @@ PROMPT_SECTIONS = {
     ),
     "workspace": f"workspace: {WORKDIR}",
     "skill": "Use load_skill to get full details when needed.",
+    "memory": (
+        "The relevant memory text will be injected below."
+        "Please adhere to the user preferences in the memory."
+        "When user says remember or expresses a clear preference, it should be extracted as a memory"
+    ),
 }
 
 SUB_SYSTEM = (
@@ -26,11 +32,14 @@ SUB_SYSTEM = (
 )
 
 
-def _assemble_system_prompt(skills: str) -> str:
+def _assemble_system_prompt(skills: str, memories: str) -> str:
     sections = [PROMPT_SECTIONS["identity"], PROMPT_SECTIONS["workspace"]]
     if skills:
-        sections.append(f"Skills available:\n{skills}\n")
+        sections.append(f"Skills available:\n{skills}")
         sections.append(PROMPT_SECTIONS["skill"])
+    if memories:
+        sections.append(PROMPT_SECTIONS["memory"])
+        sections.append(f"Relevant memories:\n{memories}")
     return "\n\n".join(sections)
 
 
@@ -43,5 +52,23 @@ def _skills_text():
     )
 
 
+def _memory_index_text():
+    if not MEMORY_INDEX.exists():
+        return ""
+    return MEMORY_INDEX.read_text(encoding=TEXT_ENCODING, errors="replace").strip()
+
+
+_last_prompt = None
+_last_memory_mtime = None
+
+
 def get_system_prompt() -> str:
-    return _assemble_system_prompt(_skills_text())
+    global _last_prompt, _last_memory_mtime
+
+    mtime = MEMORY_INDEX.stat().st_mtime if MEMORY_INDEX.exists() else 0
+    if _last_prompt is not None and mtime == _last_memory_mtime:
+        log.info("[🎯 Cache Hit] System prompt remains unchanged")
+        return _last_prompt
+    _last_memory_mtime = mtime
+    _last_prompt = _assemble_system_prompt(_skills_text(), _memory_index_text())
+    return _last_prompt

@@ -121,3 +121,11 @@ Try these prompts:
 - Did I tell you about my preferences before? (Observe if the Agent remembers).
 - I also prefer strings enclosed in single quotes instead of double quotes.
 
+### System Prompt
+
+Assembled at Runtime, Never Hardcoded
+
+> The system prompt is a generated product of policy, tools, skills, and context.
+
+Try these prompts:
+- Read the file README.md (and observe the three sections that are always loaded).

@@ -1,1 +1,5 @@
+- [agentharness_implemented_features](agentharness_implemented_features.md) - Features implemented in AgentHarness according to git history
+- [agentharness_project_location_and_structure](agentharness_project_location_and_structure.md) - AgentHarness project location and top-level directory structure
 - [code_style_preferences](code_style_preferences.md) - User's code style preferences: indentation and quotes.
+- [pyproject_toml_project_metadata](pyproject_toml_project_metadata.md) - Project metadata for the 'project' package is defined in pyproject.toml.
+- [test.py_is_hello_world_script](test.py_is_hello_world_script.md) - test.py in the project root is a minimal hello-world script, not a test suite.

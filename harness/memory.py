@@ -48,12 +48,12 @@ def select_relevant_memories(messages, max_items=5):
     recent = " ".join(reversed(recent_texts))[:2000]
     if not recent.strip():
         return []
-    log.magenta("[🔖 Memories->Recent message]", recent)
+    # log.magenta(f"[🔖 Memories->Recent message]\n{recent}")
     catalog = "\n".join(
         f"index: {index}: {file['name']} - {file['description']}"
         for index, file in enumerate(files)
     )
-    log.magenta("[🔖 Catalog]", catalog)
+    # log.magenta("[🔖 Catalog]", catalog)
     prompt = (
         f"Select releveant memory indices. Return JSON array.\n"
         f"Example: [0, 3], if empty return [].\n"

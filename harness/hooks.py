@@ -110,7 +110,7 @@ def trigger_hooks(event: str, *args):
 
 
 def workspace_inject_hook(query: str) -> str | None:
-    log.info(f"[🪝HOOK] Inject current working directory {WORKDIR}.\nquery: {query}")
+    # log.info(f"[🪝HOOK] Inject current working directory {WORKDIR}.\nquery: {query}")
     return f"\n<workspace>\n UserPromptSubmit: working in {WORKDIR}\n</workspace>\n\n{query}"
 
 
@@ -118,5 +118,5 @@ register_hook("UserPromptSubmit", workspace_inject_hook)
 register_hook("PreToolUse", permission_hook)
 register_hook("PreToolUse", log_hook)
 register_hook("PostToolUse", large_output_hook)
-register_hook("PostToolUse", tool_output_hook)
+# register_hook("PostToolUse", tool_output_hook)
 register_hook("Stop", summary_hook)
