@@ -1,5 +1,6 @@
 import json
 from config import CONTEXT_LIMIT, DEFAULT_MAX_TOKENS, MODEL_ID
+from memory import extract_memories, load_memories
 from history import (
     compact_history,
     estimate_size,
@@ -13,7 +14,7 @@ from hooks import trigger_hooks
 from tools.executor import exectue_tool
 from llm import call_llm, is_prompt_too_long_error
 from prompt import get_system_prompt
-from utils import assistant_message_dict, log
+from utils import assistant_message_dict, log, message_text
 
 rounds_since_todo = 0
 
@@ -25,6 +26,17 @@ def agent_loop(messages: list):
     # Continue until the model returns a response without tool calls.
     while True:
         system = get_system_prompt()
+
+        memories_content = load_memories(messages)
+        if memories_content:
+            system += "\n\n" + memories_content
+            log.magenta(f"[🔖 Load memories]", memories_content)
+        pre_compress = [
+            {"role": m.get("role", ""), "content": message_text(m)}
+            for m in messages
+            if isinstance(m, dict)
+        ]
+
         messages[:] = tool_result_budget(messages)
         messages[:] = snip_compact(messages)
         messages[:] = micro_compact(messages)
@@ -52,6 +64,7 @@ def agent_loop(messages: list):
         messages.append(assistant_message_dict(assistant))
         rounds_since_todo += 1
         if not assistant.tool_calls:
+            extract_memories(pre_compress)
             force = trigger_hooks("Stop", messages)
             if force:
                 messages.append({"role": "user", "content": force})
@@ -60,11 +73,11 @@ def agent_loop(messages: list):
         for tool_call in assistant.tool_calls:
             name = tool_call.function.name
             args = json.loads(tool_call.function.arguments or "{}")
-            
+
             if name == "compact":
                 messages[:] = compact_history(messages)
                 break
-            
+
             blocked = trigger_hooks("PreToolUse", name, args)
             if name == "todo_write":
                 rounds_since_todo = 0

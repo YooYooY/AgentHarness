@@ -109,3 +109,15 @@ Context Will Fill Up
 Try these prompts:
 - Read the food.md file in the current directory and summarize its contents for me.
 
+### Memory
+
+Keep a Layer That Doesn't Lose Details
+
+> Some facts should survive summarization and future sessions
+
+Try these prompts:
+- I prefer using tabs for indentation over spaces. Please keep this in mind.
+- Create a Python file named test.py (observe if the Agent uses tabs).
+- Did I tell you about my preferences before? (Observe if the Agent remembers).
+- I also prefer strings enclosed in single quotes instead of double quotes.
+

@@ -102,6 +102,17 @@ def parse_frontmatter(text: str):
     meta = {}
     for line in parts[1].strip().splitlines():
         if ":" in line:
-            k,v = line.split(":", 1)
+            k, v = line.split(":", 1)
             meta[k.strip()] = v.strip().strip('"').strip("'")
     return meta, parts[2].strip()
+
+
+def message_text(msg: dict):
+    content = msg.get("content", "")
+    if isinstance(content, str):
+        return content.strip()
+    return str(content).strip()
+
+
+def llm_text(response):
+    return (response.choices[0].message.content or "").strip()

@@ -6,11 +6,10 @@ from openai import OpenAI
 
 load_dotenv(override=True)
 
-MODEL_ID=os.environ["MODEL_ID"]
+MODEL_ID = os.environ["MODEL_ID"]
 
 client = OpenAI(
-  api_key=os.environ["OPENAI_API_KEY"],
-  base_url=os.environ["OPENAI_BASE_URL"]
+    api_key=os.environ["OPENAI_API_KEY"], base_url=os.environ["OPENAI_BASE_URL"]
 )
 
 DEFAULT_MAX_TOKENS = 8000
@@ -34,3 +33,11 @@ KEEP_RECENT = 3
 CONTEXT_LIMIT = 100000
 
 TRANSCRIPTS_DIR = WORKDIR / ".transcripts"
+
+MEMORY_DIR = WORKDIR / ".memory"
+
+MEMORY_DIR.mkdir(exist_ok=True)
+
+MEMORY_INDEX = MEMORY_DIR / "MEMORY.md"
+
+CONSOLIDATE_THRESHOLD = 10
