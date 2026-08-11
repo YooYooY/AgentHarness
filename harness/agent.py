@@ -1,6 +1,7 @@
 import json
-from config import CONTEXT_LIMIT, DEFAULT_MAX_TOKENS, MODEL_ID
-from memory import extract_memories, load_memories
+from config import CONTEXT_LIMIT, DEFAULT_MAX_TOKENS, MODEL_ID, TODO_REMINDER_ROUNDS
+from tools.handlers import todo_update_reminder
+from memory import consolidate_memories, extract_memories, load_memories
 from history import (
     compact_history,
     estimate_size,
@@ -31,6 +32,12 @@ def agent_loop(messages: list):
         if memories_content:
             system += "\n\n" + memories_content
             log.magenta(f"[🔖 Load memories]", memories_content)
+
+        todo_remainder = todo_update_reminder(rounds_since_todo, TODO_REMINDER_ROUNDS)
+        if todo_remainder:
+            system+="\n\n"+todo_remainder
+            log.info("💡 [TODO Reminder]: {rounds_since_todo} consecutive rounds not update.")
+
         pre_compress = [
             {"role": m.get("role", ""), "content": message_text(m)}
             for m in messages
@@ -46,12 +53,6 @@ def agent_loop(messages: list):
 
         messages[:] = repair_message_chain(messages)
 
-        if rounds_since_todo >= 5 and messages:
-            messages.append(
-                {"role": "user", "content": "<remider>Update your todos.</remider>"}
-            )
-            log.info("💡 REMIDER: Update your todos.")
-            rounds_since_todo = 0
         try:
             response = call_llm(system, messages, max_tokens, model)
         except Exception as e:
@@ -65,6 +66,7 @@ def agent_loop(messages: list):
         rounds_since_todo += 1
         if not assistant.tool_calls:
             extract_memories(pre_compress)
+            consolidate_memories()
             force = trigger_hooks("Stop", messages)
             if force:
                 messages.append({"role": "user", "content": force})

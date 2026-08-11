@@ -77,12 +77,34 @@ class Todo(TypedDict):
     content: str
     status: Literal["pending", "in_progress", "completed"]
 
+
+def todo_update_reminder(rounds_since: int, threshold: int):
+    if rounds_since < threshold or not CURRENT_TODOS:
+        return None
+    active = [
+        todo
+        for todo in CURRENT_TODOS
+        if todo.get("status") in ("pending", "in_progress")
+    ]
+    if not active:
+        return None
+    lines = [
+        "[TODO Reminder] There are unfinished tasks.",
+        f"todo_write has not been called for {rounds_since} consecutive rounds.",
+        f"Please update the progress." "Current Task:",
+    ]
+    for todo in CURRENT_TODOS:
+        lines.append(f"- [{todo.get("status", "")}]: {todo.get('content', '')}")
+    return "\n".join("lines")
+
+
 CURRENT_TODOS: list[dict] = []
 CURRENT_ICON_CONFIG = {
     "pending": "⚪️ pending",
     "in_progress": "🟢 in_progress",
     "completed": "✅ completed",
 }
+
 
 def run_todo_write(todos: Todo) -> str:
     global CURRENT_TODOS
@@ -105,5 +127,5 @@ TOOL_HANDLERS = {
     "edit_file": run_edit,
     "glob": run_glob,
     "todo_write": run_todo_write,
-    "load_skill": run_load_skill
+    "load_skill": run_load_skill,
 }

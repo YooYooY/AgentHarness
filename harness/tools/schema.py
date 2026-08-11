@@ -50,10 +50,6 @@ BASE_TOOLS = [
         {"pattern": {"type": "string"}},
         ["pattern"],
     ),
-]
-
-TOOLS = [
-    *BASE_TOOLS,
     _fn_tool(
         "todo_write",
         "Create and manage a task list ...",
@@ -75,6 +71,10 @@ TOOLS = [
         },
         ["todos"],
     ),
+]
+
+TOOLS = [
+    *BASE_TOOLS,
     _fn_tool(
         "spawn_subagent",
         "Launch a subagent to handle a complex subtask. Returns only the final conclusion.",

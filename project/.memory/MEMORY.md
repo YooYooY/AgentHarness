@@ -1,3 +1,1 @@
-- [preferences](preferences.md) - # 用户偏好记录
-- [tab_indentation](tab_indentation.md) - User prefers Tab key for indentation instead of spaces.
-- [single_quotes](single_quotes.md) - User prefers single quotes for strings instead of double quotes.
+- [code_style_preferences](code_style_preferences.md) - User's code style preferences: indentation and quotes.

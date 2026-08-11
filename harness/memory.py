@@ -1,7 +1,14 @@
 import json
+import keyword
 import re
 import time
-from config import MEMORY_DIR, MEMORY_INDEX, MODEL_ID, TEXT_ENCODING
+from config import (
+    CONSOLIDATE_THRESHOLD,
+    MEMORY_DIR,
+    MEMORY_INDEX,
+    MODEL_ID,
+    TEXT_ENCODING,
+)
 from utils import llm_text, message_text, parse_frontmatter, log
 from config import client
 
@@ -60,19 +67,28 @@ def select_relevant_memories(messages, max_items=5):
         )
         text = llm_text(response)
         match = re.reach(r"\[.*\]", text, re.DOTALL)
-        if not match:
-            return
-        indices = json.loads(match.group())
-        selected = []
-        for idx in indices:
-            if isinstance(idx, int) and 0 <= idx < len(files):
-                selected.append(files[idx]["filename"])
-                if len(selected) >= max_items:
-                    break
-        return selected
+        if match:
+            indices = json.loads(match.group())
+            selected = []
+            for idx in indices:
+                if isinstance(idx, int) and 0 <= idx < len(files):
+                    selected.append(files[idx]["filename"])
+                    if len(selected) >= max_items:
+                        break
+            return selected
 
     except Exception:
         return []
+
+    keywords = [word.lower() for word in recent.split() if len(word) > 3]
+    selected = []
+    for f in files:
+        text = f["name"] + " " + f["description"].lower()
+        if any(kw in text for kw in keywords):
+            selected.append(f["filename"])
+            if len(selected) > max_items:
+                break
+    return selected
 
 
 def read_memory_file(filename):
@@ -117,7 +133,7 @@ def write_memory_file(name, mem_type, description, body):
         f"---\nname: {name}\ndescription: {description}\ntype: {mem_type}\n---\n\n{body}\n",
         encoding=TEXT_ENCODING,
     )
-    
+
     _rebuild_index()
     return filepath
 
@@ -171,4 +187,48 @@ def extract_memories(messages: list):
         if count:
             log.magenta(f"[🔖 Memories] {count} new memories has extracted!")
     except Exception as e:
+        pass
+
+
+def consolidate_memories():
+    files = list_memory_files()
+    if len(files) < CONSOLIDATE_THRESHOLD:
+        return
+    catalog = "\n\n".join(
+        f"## {f['filename']}\nname:{f['name']}\ndescription:{f['description']}\n{f['body']}"
+        for f in files
+    )
+    prompt = (
+        "Merge the following memory files, rules:\n"
+        "1. Merge duplicates into one.\n"
+        "2. Delete outdated/contradictory memories\n"
+        "3. Keep the total number of memories under 30.\n"
+        "4. Prioritize retaining important user preferences.\n"
+        "Return a JSON array, each item: {name, type, description, body}\n\n"
+        f"{catalog}"
+    )
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_ID, messages=[{"role": "user", "content": prompt}]
+        )
+        text = llm_text(response)
+        match = re.search(r"\[.*\]", text, re.DOTALL)
+        if not match:
+            return
+        items = json.loads(match.group())
+        for f in MEMORY_DIR.glob("*.md"):
+            if f.name != "MEMORY.md":
+                f.unlink()
+        for mem in items:
+            name = mem.get("name", f"memory_{int(time.time())}")
+            mem_type = mem.get("type", "user")
+            desc = mem.get("description", "")
+            body = mem.get("body", "")
+            if desc and body:
+                write_memory_file(name, mem_type, desc, body)
+        log.magenta(
+            f"[🔖 Memories Consolidate] The memory Entries {len(files)}->{len(items)} have been organized"
+        )
+
+    except Exception:
         pass
