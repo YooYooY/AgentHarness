@@ -13,7 +13,7 @@ from history import (
 )
 from hooks import trigger_hooks
 from tools.executor import exectue_tool
-from llm import call_llm, is_prompt_too_long_error
+from llm import RecoveryState, call_llm, is_prompt_too_long_error, with_retry
 from prompt import get_system_prompt
 from utils import assistant_message_dict, log, message_text
 
@@ -21,6 +21,8 @@ rounds_since_todo = 0
 
 
 def agent_loop(messages: list):
+    state = RecoveryState()
+
     global rounds_since_todo
     max_tokens = DEFAULT_MAX_TOKENS
     model = MODEL_ID
@@ -54,7 +56,13 @@ def agent_loop(messages: list):
         messages[:] = repair_message_chain(messages)
 
         try:
-            response = call_llm(system, messages, max_tokens, model)
+            # response = call_llm(system, messages, max_tokens, model)
+            response = with_retry(
+                lambda max_tokens=max_tokens, model=state.current_model: call_llm(
+                    system, messages, max_tokens, model
+                ),
+                state
+            )
         except Exception as e:
             if is_prompt_too_long_error(e):
                 messages[:] = reactive_compact(messages)
