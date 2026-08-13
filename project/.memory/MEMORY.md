@@ -1,7 +1,0 @@
-- [agentharness_project_overview](agentharness_project_overview.md) - AgentHarness project location, structure, and git history
-- [code_style_preferences](code_style_preferences.md) - User code style preferences: tabs and single quotes
-- [llm_retry_error_handling](llm_retry_error_handling.md) - Final retry/backoff behavior in harness/llm.py, including overload detection and log formats
-- [pyproject_toml_project_metadata](pyproject_toml_project_metadata.md) - Project package metadata from pyproject.toml
-- [retry_backoff_simulation_script](retry_backoff_simulation_script.md) - Simulation script project/simulate_429_529.py exercises retry/backoff logic
-- [safety_policy_blocks_rm_rf](safety_policy_blocks_rm_rf.md) - Execution environment blocks dangerous commands like rm -rf
-- [test.py_is_hello_world_script](test.py_is_hello_world_script.md) - test.py is a hello-world demo, not a test suite
