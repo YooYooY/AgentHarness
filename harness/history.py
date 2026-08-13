@@ -133,7 +133,7 @@ def micro_compact(messages: list):
         return messages
     for index, msg in tool_msgs[:-KEEP_RECENT]:
         content = str(msg.get("content", ""))
-        if len(content) > 120:
+        if len(content) > 200:
             log.magenta("[🍔 HISTORY] micro_compact")
             msg["content"] = "[Eearlier tool result compacted. Re-run if needed.]"
     return messages

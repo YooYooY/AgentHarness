@@ -1,8 +1,15 @@
 import random
 import time
 
-from openai import RateLimitError
-from config import BASE_DELAY_MS, MAX_RETRIES, MODEL_ID, client
+from openai import APIStatusError, RateLimitError
+from config import (
+    BASE_DELAY_MS,
+    FALLBACK_MODEL_ID,
+    MAX_CONSECUTIVE_529,
+    MAX_RETRIES,
+    MODEL_ID,
+    client,
+)
 from tools.schema import TOOLS
 from utils import log
 
@@ -44,7 +51,11 @@ def _is_rate_limit_error(e: Exception):
 
 
 def _is_overloaded_error(e: Exception):
-    pass
+    if isinstance(e, APIStatusError) and e.status_code == 529:
+        return True
+    msg = str(e).lower()
+    name = type(e).__name__.lower()
+    return "overloaded" in name or "529" in msg
 
 
 def retry_delay(attempt: int, retry_after=None):
@@ -70,4 +81,16 @@ def with_retry(fn, state: RecoveryState):
                 )
                 time.sleep(delay)
                 continue
+            if _is_overloaded_error(e):
+                state.consecutive_529 += 1
+                if state.consecutive_529 >= MAX_CONSECUTIVE_529:
+                    if FALLBACK_MODEL_ID:
+                        state.current_model = FALLBACK_MODEL_ID
+                        log.info(f"Replace to backup model: {FALLBACK_MODEL_ID}")
+                    else:
+                        state.consecutive_529 = 0
+                        log.info("Empty backup model, please retry")
+            delay = retry_delay(attempt)
+            time.sleep(delay)
+            continue
     raise RuntimeError(f"excessive max retries ({MAX_RETRIES})")

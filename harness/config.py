@@ -28,7 +28,7 @@ TOOL_RESULT_DIR = WORKDIR / ".task_outputs" / "tool_results"
 
 MAX_MESSAGE_LENGTH = 50
 
-KEEP_RECENT = 3
+KEEP_RECENT = 5
 
 CONTEXT_LIMIT = 100000
 

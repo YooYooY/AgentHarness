@@ -1,0 +1,30 @@
+--- orig/llm.py	2026-08-13 11:00:51
++++ fixed/llm.py	2026-08-13 11:00:51
+@@ -51,7 +51,7 @@
+ 
+ 
+ def _is_overloaded_error(e: Exception):
+-    if isinstance(e, APIStatusError) or e.status_code == 529:
++    if isinstance(e, APIStatusError) and e.status_code == 529:
+         return True
+     msg = str(e).lower()
+     name = type(e).__name__.lower()
+@@ -86,10 +86,16 @@
+                 if state.consecutive_529 >= MAX_CONSECUTIVE_529:
+                     if FALLBACK_MODEL_ID:
+                         state.current_model = FALLBACK_MODEL_ID
+-                        log.info("Replace to backup model: {FALLBACK_MODEL_ID}")
++                        log.info(f"Replace to backup model: {FALLBACK_MODEL_ID}")
+                     else:
+                         state.consecutive_529 = 0
+-                        log.info("Empty backup mode, please retry")
++                        log.info("Empty backup model, please retry")
++                delay = retry_delay(attempt)
++                log.info(
++                    f"[Overloaded] Retries {attempt+1}/{MAX_RETRIES}, wait:{delay:.1f}s"
++                )
++                time.sleep(delay)
++                continue
+             delay = retry_delay(attempt)
+             time.sleep(delay)
+             continue

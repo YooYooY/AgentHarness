@@ -1,0 +1,116 @@
+ab42b7a feat: Errory retry-Rate limit Error
+ harness/agent.py  | 12 ++++++++++--
+ harness/config.py | 17 +++++++++++++++++
+ harness/llm.py    | 52 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 78 insertions(+), 3 deletions(-)
+fe3a240 feat: System Prompt
+ README.md                                          |  8 +++++
+ harness/hooks.py                                   |  4 +--
+ harness/memory.py                                  |  4 +--
+ harness/prompt.py                                  | 35 +++++++++++++++++++---
+ project/.memory/MEMORY.md                          |  4 +++
+ .../.memory/agentharness_implemented_features.md   |  7 +++++
+ .../agentharness_project_location_and_structure.md |  7 +++++
+ project/.memory/pyproject_toml_project_metadata.md |  7 +++++
+ project/.memory/test.py_is_hello_world_script.md   |  7 +++++
+ 9 files changed, 75 insertions(+), 8 deletions(-)
+1d4110a chore: optimal memory
+ harness/agent.py                          | 18 ++++---
+ harness/config.py                         |  2 +
+ harness/memory.py                         | 84 ++++++++++++++++++++++++++-----
+ harness/tools/handlers.py                 | 24 ++++++++-
+ harness/tools/schema.py                   |  8 +--
+ project/.memory/MEMORY.md                 |  4 +-
+ project/.memory/code_style_preferences.md |  7 +++
+ project/.memory/preferences.md            |  6 ---
+ project/.memory/single_quotes.md          |  7 ---
+ project/.memory/tab_indentation.md        |  7 ---
+ project/test.py                           |  4 +-
+ 11 files changed, 121 insertions(+), 50 deletions(-)
+89db56f feat: add memory
+ README.md                          |  12 +++
+ harness/agent.py                   |  19 +++-
+ harness/config.py                  |  13 ++-
+ harness/hooks.py                   |   2 +-
+ harness/memory.py                  | 174 +++++++++++++++++++++++++++++++++++++
+ harness/utils.py                   |  13 ++-
+ project/.memory/MEMORY.md          |   3 +
+ project/.memory/preferences.md     |   6 ++
+ project/.memory/single_quotes.md   |   7 ++
+ project/.memory/tab_indentation.md |   7 ++
+ project/test.py                    |   6 ++
+ 11 files changed, 254 insertions(+), 8 deletions(-)
+ab24851 feat: Context Compact 02
+ harness/agent.py        | 34 +++++++++++++++++++++++-----
+ harness/config.py       |  6 ++++-
+ harness/history.py      | 60 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ harness/llm.py          | 14 +++++++++++-
+ harness/prompt.py       |  1 +
+ harness/tools/schema.py |  8 +++++++
+ 6 files changed, 115 insertions(+), 8 deletions(-)
+====
+diff --git a/harness/llm.py b/harness/llm.py
+index 05bb349..e9750be 100644
+--- a/harness/llm.py
++++ b/harness/llm.py
+@@ -1,5 +1,10 @@
+-from config import client
++import random
++import time
++
++from openai import RateLimitError
++from config import BASE_DELAY_MS, MAX_RETRIES, MODEL_ID, client
+ from tools.schema import TOOLS
++from utils import log
+ 
+ 
+ def call_llm(system: str, messages: list, max_token: int, model: str):
+@@ -21,3 +26,48 @@ def is_prompt_too_long_error(e: Exception):
+         or "contxt_length" in msg
+         or "maximum content" in msg
+     )
++
++
++class RecoveryState:
++    def __init__(self):
++        self.has_escalated = False
++        self.current_model = MODEL_ID
++        self.consecutive_529 = 0
++
++
++def _is_rate_limit_error(e: Exception):
++    if isinstance(e, RateLimitError):
++        return True
++    msg = str(e).lower()
++    name = type(e).__name__.lower()
++    return "ratelimit" in name or "429" in msg
++
++
++def _is_overloaded_error(e: Exception):
++    pass
++
++
++def retry_delay(attempt: int, retry_after=None):
++    if retry_after:
++        try:
++            return float(retry_after)
++        except (TypeError, ValueError):
++            pass
++    base = min(BASE_DELAY_MS * 2**attempt, 32000) / 1000
++    return base + random.uniform(0, base * 0.25)
++
++
++def with_retry(fn, state: RecoveryState):
++    for attempt in range(MAX_RETRIES):
++        try:
++            result = fn()
++            return result
++        except Exception as e:
++            if _is_rate_limit_error(e):
++                delay = retry_delay(attempt)
++                log.info(
++                    f"[Rate limit] Retries {attempt+1}/{MAX_RETRIES}, wait:{delay:.1f}s"
++                )
++                time.sleep(delay)
++                continue
++    raise RuntimeError(f"excessive max retries ({MAX_RETRIES})")

@@ -1,5 +1,7 @@
-- [agentharness_implemented_features](agentharness_implemented_features.md) - Features implemented in AgentHarness according to git history
-- [agentharness_project_location_and_structure](agentharness_project_location_and_structure.md) - AgentHarness project location and top-level directory structure
-- [code_style_preferences](code_style_preferences.md) - User's code style preferences: indentation and quotes.
-- [pyproject_toml_project_metadata](pyproject_toml_project_metadata.md) - Project metadata for the 'project' package is defined in pyproject.toml.
-- [test.py_is_hello_world_script](test.py_is_hello_world_script.md) - test.py in the project root is a minimal hello-world script, not a test suite.
+- [agentharness_project_overview](agentharness_project_overview.md) - AgentHarness project location, structure, and git history
+- [code_style_preferences](code_style_preferences.md) - User code style preferences: tabs and single quotes
+- [llm_retry_error_handling](llm_retry_error_handling.md) - Final retry/backoff behavior in harness/llm.py, including overload detection and log formats
+- [pyproject_toml_project_metadata](pyproject_toml_project_metadata.md) - Project package metadata from pyproject.toml
+- [retry_backoff_simulation_script](retry_backoff_simulation_script.md) - Simulation script project/simulate_429_529.py exercises retry/backoff logic
+- [safety_policy_blocks_rm_rf](safety_policy_blocks_rm_rf.md) - Execution environment blocks dangerous commands like rm -rf
+- [test.py_is_hello_world_script](test.py_is_hello_world_script.md) - test.py is a hello-world demo, not a test suite
