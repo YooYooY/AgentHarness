@@ -1,5 +1,13 @@
 import json
-from config import CONTEXT_LIMIT, DEFAULT_MAX_TOKENS, MODEL_ID, TODO_REMINDER_ROUNDS
+from config import (
+    CONTEXT_LIMIT,
+    CONTINUATION_PROMPT,
+    DEFAULT_MAX_TOKENS,
+    ESCALATE_MAX_TOKENS,
+    MAX_RECOVERY_RETRIES,
+    MODEL_ID,
+    TODO_REMINDER_ROUNDS,
+)
 from tools.handlers import todo_update_reminder
 from memory import consolidate_memories, extract_memories, load_memories
 from history import (
@@ -24,9 +32,7 @@ def agent_loop(messages: list):
     state = RecoveryState()
 
     global rounds_since_todo
-    max_tokens = DEFAULT_MAX_TOKENS
-    model = MODEL_ID
-    # Continue until the model returns a response without tool calls.
+
     while True:
         system = get_system_prompt()
 
@@ -37,8 +43,10 @@ def agent_loop(messages: list):
 
         todo_remainder = todo_update_reminder(rounds_since_todo, TODO_REMINDER_ROUNDS)
         if todo_remainder:
-            system+="\n\n"+todo_remainder
-            log.info(f"💡 [TODO Reminder]: {rounds_since_todo} consecutive rounds not update.")
+            system += "\n\n" + todo_remainder
+            log.info(
+                f"💡 [TODO Reminder]: {rounds_since_todo} consecutive rounds not update."
+            )
 
         pre_compress = [
             {"role": m.get("role", ""), "content": message_text(m)}
@@ -58,17 +66,61 @@ def agent_loop(messages: list):
         try:
             # response = call_llm(system, messages, max_tokens, model)
             response = with_retry(
-                lambda max_tokens=max_tokens, model=state.current_model: call_llm(
-                    system, messages, max_tokens, model
+                lambda: call_llm(
+                    system, messages, state.max_tokens, state.current_model
                 ),
-                state
+                state,
             )
         except Exception as e:
             if is_prompt_too_long_error(e):
-                messages[:] = reactive_compact(messages)
-                continue
+                if not state.has_attempted_reactive_compact:
+                    messages[:] = reactive_compact(messages)
+                    state.has_attempted_reactive_compact = True
+                    continue
+                log.error("[Already try reactive compact, still too long]")
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": "Error, can't continue due to prompt too long",
+                    }
+                )
+                return
+            name = type(e).__name__
+            log.error(f"[can't recovery] {name} {str(e)[:100]}")
+            messages.append(
+                {"role": "assistant", "content": f"[Error] {name}:{str(e)[:100]}"}
+            )
+            return
 
         choice = response.choices[0]
+
+        if choice.finish_reason == "length":
+            if not state.has_escalated:
+                state.max_tokens = ESCALATE_MAX_TOKENS
+                state.has_escalated = True
+                log.info(
+                    f"[max_token] {DEFAULT_MAX_TOKENS} escalate to {ESCALATE_MAX_TOKENS}"
+                )
+                continue
+            messages.append(assistant_message_dict(choice.message))
+            if choice.message.tool_calls:
+                for tool_call in choice.message.tool_calls:
+                    messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": "[output truncated; tool execution failed.]",
+                        }
+                    )
+                continue
+            if state.recovery_count < MAX_RECOVERY_RETRIES:
+                messages.append({"role": "user", "content": CONTINUATION_PROMPT})
+                state.recovery_count += 1
+                log.info(f"Pick up {state.recovery_count}/{MAX_RECOVERY_RETRIES}")
+                continue
+            log.info("reach Recovery retries limit")
+            return
+
         assistant = choice.message
         messages.append(assistant_message_dict(assistant))
         rounds_since_todo += 1

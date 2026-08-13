@@ -60,3 +60,8 @@ BASE_DELAY_MS = 500
 
 # dedine how many times consecutively the event occurs 529 befor switching to the backup model
 MAX_CONSECUTIVE_529 = 3
+
+CONTINUATION_PROMPT = """
+Output token limit hit. Resume directly-
+no apology, no recap. Pick up mid-thought.
+"""

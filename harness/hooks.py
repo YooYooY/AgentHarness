@@ -41,8 +41,11 @@ DESTRUCTIVE = [
 
 HOOKS = {"UserPromptSubmit": [], "PreToolUse": [], "PostToolUse": [], "Stop": []}
 
+alway_allow_writeandedit = False
+
 
 def permission_hook(name: str, args: dict):
+    global alway_allow_writeandedit
     if name == "bash":
         for pattern in DENY_LIST:
             if pattern in args.get("command", ""):
@@ -56,11 +59,15 @@ def permission_hook(name: str, args: dict):
                     return "Deny"
 
     if name in ("write_file", "edit_file"):
+        if alway_allow_writeandedit:
+            return None
         path = args.get("path", "")
         if not (WORKDIR / path).resolve().is_relative_to(WORKDIR):
             log.warn("Writing outside workspace")
             log.warn(f"tool: {name}({args})")
-            choice = input("   Allow? [y/N] ").strip().lower()
+            choice = input("   Allow? [Y/N/Alway] ").strip().lower()
+            if choice == "Alway":
+                alway_allow_writeandedit = True
             if choice not in ("y", "yes"):
                 return "Denied: paths outside workspace are never allowed."
 
@@ -71,9 +78,11 @@ def log_hook(name: str, args: dict):
     log.info(f"[🪝HOOK PreToolUse] {name} {json.dumps(args, ensure_ascii=False)}")
     return None
 
+
 def tool_output_hook(name: str, args: dict, output: str | None):
     log.cyan(f"[🪝HOOK PostToolUse] Tool [{name}] output: {output}")
     return None
+
 
 def large_output_hook(name: str, args: dict, output):
     if len(str(output)) > 100000:

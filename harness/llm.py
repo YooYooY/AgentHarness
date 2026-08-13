@@ -4,6 +4,7 @@ import time
 from openai import APIStatusError, RateLimitError
 from config import (
     BASE_DELAY_MS,
+    DEFAULT_MAX_TOKENS,
     FALLBACK_MODEL_ID,
     MAX_CONSECUTIVE_529,
     MAX_RETRIES,
@@ -40,6 +41,9 @@ class RecoveryState:
         self.has_escalated = False
         self.current_model = MODEL_ID
         self.consecutive_529 = 0
+        self.max_tokens = DEFAULT_MAX_TOKENS
+        self.has_attempted_reactive_compact = False
+        self.recovery_count = 0
 
 
 def _is_rate_limit_error(e: Exception):
