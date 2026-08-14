@@ -102,3 +102,30 @@ def complete_task(task_id):
         msg += f"\n unblocked: {','.join(unblocked)}"
         print(f"\n unblocked: {','.join(unblocked)}")
     return msg
+
+
+def delete_task(task_id):
+    task_path = _task_path(task_id)
+    if not task_path.exists():
+        return f"task {task_id} does't exist, delete fail"
+    task = load_task(task_id)
+    dependents = []
+    for t in list_tasks():
+        if task_id in t.blockedBy:
+            dependents.append(t)
+    if dependents:
+        incompleted_deps = [t for t in dependents if t.status != "completed"]
+        if incompleted_deps:
+            dep_info = ",".join([f"{t.id}({t.subject})" for t in incompleted_deps])
+            return f"task {task_id} blockedBy some incompleted tasked, delete fail, blockedBy: {dep_info}"
+        log.info(
+            f"[💡 Task Remind] task {task_id} completed; cleaned blockedBy relationship"
+        )
+        for t in dependents:
+            t.blockedBy = [d for d in t.blockedBy if d != task_id]
+            save_task(t)
+            log.info(f"- cleaned {t.id} dependent")
+    task_path.unlink()
+    msg = f"task {task_id}({task.subject}) has been delete"
+    log.info(msg)
+    return msg

@@ -4,7 +4,14 @@ import subprocess
 from typing import Literal, TypedDict
 
 from config import TEXT_ENCODING, WORKDIR
-from tasks import claim_task, complete_task, create_task, get_task, list_tasks
+from tasks import (
+    claim_task,
+    complete_task,
+    create_task,
+    delete_task,
+    get_task,
+    list_tasks,
+)
 from skills import run_load_skill
 from utils import decode_subprocess_output, log, read_text, safe_path
 
@@ -162,6 +169,10 @@ def run_complete_task(task_id):
     return complete_task(task_id)
 
 
+def run_delete_task(task_id):
+    return delete_task(task_id)
+
+
 TOOL_HANDLERS = {
     "bash": run_bash,
     "read_file": run_read,
@@ -173,5 +184,6 @@ TOOL_HANDLERS = {
     "create_task": run_create_task,
     "list_tasks": run_list_tasks,
     "get_task": run_claim_task,
-    "complete_task": run_complete_task
+    "complete_task": run_complete_task,
+    "delete_task": run_delete_task,
 }

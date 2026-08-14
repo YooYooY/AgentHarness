@@ -1,7 +1,7 @@
 [project]
 name = "project"
 version = "0.1.0"
-description = "Add your description here"
+description = "FastAPI + SQLite service for IELTS Food core shadowing passages"
 readme = "README.md"
 authors = [
     { name = "YooYooY", email = "744534984cwl@gmail.com" }
@@ -16,6 +16,11 @@ dependencies = [
 
 [project.scripts]
 project = "project:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13.0"]

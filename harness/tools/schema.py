@@ -126,4 +126,10 @@ TOOLS = [
         },
         [],
     ),
+    _fn_tool(
+        "delete_task",
+        "delete completed task",
+        {"task_id": {"type": "string"}},
+        ["task_id"],
+    ),
 ]

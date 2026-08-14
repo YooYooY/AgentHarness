@@ -1,8 +1,0 @@
-{
-  "id": "task_1786685457_6776",
-  "subject": "setup database schema",
-  "description": "Design and set up the database schema for the project, including tables, indexes, and any initial seed data.",
-  "status": "completed",
-  "owner": "agent",
-  "blockedBy": []
-}
