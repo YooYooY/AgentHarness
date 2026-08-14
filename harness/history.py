@@ -12,7 +12,7 @@ from config import (
     TRANSCRIPTS_DIR,
     client,
 )
-from utils import log
+from utils import log, with_loading
 
 
 def persist_large_output(tool_call_id: str, output: str):
@@ -133,7 +133,7 @@ def micro_compact(messages: list):
         return messages
     for index, msg in tool_msgs[:-KEEP_RECENT]:
         content = str(msg.get("content", ""))
-        if len(content) > 200:
+        if len(content) > 1000:
             log.magenta("[🍔 HISTORY] micro_compact")
             msg["content"] = "[Eearlier tool result compacted. Re-run if needed.]"
     return messages
@@ -152,6 +152,7 @@ def write_transcript(messages: list):
     return path
 
 
+@with_loading("📜 summarize history...")
 def summarize_history(messages: list):
     conversation = json.dumps(messages, default=str, ensure_ascii=False)[:80000]
     prompt = (

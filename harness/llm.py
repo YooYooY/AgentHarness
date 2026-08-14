@@ -12,9 +12,10 @@ from config import (
     client,
 )
 from tools.schema import TOOLS
-from utils import log
+from utils import log, with_loading
 
 
+@with_loading("🚀 llm requesting...")
 def call_llm(system: str, messages: list, max_token: int, model: str):
     return client.chat.completions.create(
         model=model,

@@ -50,26 +50,57 @@ BASE_TOOLS = [
         {"pattern": {"type": "string"}},
         ["pattern"],
     ),
+    # _fn_tool(
+    #     "todo_write",
+    #     "Create and manage a task list ...",
+    #     {
+    #         "todos": {
+    #             "type": "array",
+    #             "items": {
+    #                 "type": "object",
+    #                 "properties": {
+    #                     "content": {"type": "string"},
+    #                     "status": {
+    #                         "type": "string",
+    #                         "enum": ["pending", "in_progress", "completed"],
+    #                     },
+    #                 },
+    #                 "required": ["content", "status"],
+    #             },
+    #         }
+    #     },
+    #     ["todos"],
+    # ),
     _fn_tool(
-        "todo_write",
-        "Create and manage a task list ...",
+        "create_task",
+        "create new task, with optional blockedBy dependency",
         {
-            "todos": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "content": {"type": "string"},
-                        "status": {
-                            "type": "string",
-                            "enum": ["pending", "in_progress", "completed"],
-                        },
-                    },
-                    "required": ["content", "status"],
-                },
-            }
+            "subject": {"type": "string"},
+            "description": {"type": "string"},
+            "blockedBy": {"type": "array", "items": {"type": "string"}},
         },
-        ["todos"],
+        ["subject"],
+    ),
+    _fn_tool("list_tasks", "list all tasks status, owner and blockedBy", {}, []),
+    _fn_tool(
+        "get_task",
+        "get full task details by task ID",
+        {
+            "task_id": {"type": "string"},
+        },
+        ["task_id"],
+    ),
+    _fn_tool(
+        "claim_task",
+        "claim the pending task, set the owner, and change the status to in_progress",
+        {"task_id": {"type": "string"}},
+        ["task_id"],
+    ),
+    _fn_tool(
+        "complete_task",
+        "complete tasks with the status->in_progress and report downstream unblocking tasks",
+        {"task_id": {"type": "string"}},
+        ["task_id"],
     ),
 ]
 

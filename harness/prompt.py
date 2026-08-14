@@ -6,7 +6,7 @@ from utils import log, read_text
 PROMPT_SECTIONS = {
     "identity": (
         "You are a programming agent. Act directly and modify files when needed. "
-        "For multi-step tasks, use todo_write to create a plan before execution "
+        # "For multi-step tasks, use todo_write to create a plan before execution "
         "and update the task status as you make progress. "
         "When a task contains a complex independent subtask, use spawn_subagent "
         "to delegate that subtask. "

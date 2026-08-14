@@ -2,7 +2,7 @@ import inspect
 import json
 from hooks import trigger_hooks
 from tools.handlers import TOOL_HANDLERS
-from utils import log
+from utils import log, with_loading
 from prompt import SUB_SYSTEM
 from config import client, MODEL_ID, DEFAULT_MAX_TOKENS
 from tools.schema import BASE_TOOLS
@@ -31,6 +31,7 @@ def exectue_tool(name: str, args: dict) -> str:
     return handler(**bound.arguments)
 
 
+@with_loading("👾 spawn Subagent...")
 def run_spawn_subagent(description: str):
     log.info("] 👾 SubAgent start")
     messages = [{"role": "user", "content": description}]

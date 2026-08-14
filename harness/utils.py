@@ -1,3 +1,4 @@
+from functools import wraps
 from pathlib import Path
 from rich.console import Console
 from config import TEXT_ENCODING, WORKDIR
@@ -6,11 +7,14 @@ from config import TEXT_ENCODING, WORKDIR
 def read_text(path, encoding=TEXT_ENCODING, errors="replace"):
     return Path(path).read_text(encoding=encoding, errors=errors)
 
+
 def write_text(path, content, encoding=TEXT_ENCODING):
     return Path(path).write_text(content, encoding=encoding)
 
+
 def open_text(path, mode="w", encoding=TEXT_ENCODING):
     return Path(path).open(mode, encoding=encoding)
+
 
 def assistant_message_dict(message) -> dict:
     data = message.model_dump(exclude_none=True)
@@ -101,6 +105,21 @@ class Logger:
 
 
 log = Logger()
+
+
+def with_loading(message="loading..."):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            with console.status(
+                f"[bold cyan]{message}[/bold cyan]", spinner="dots"
+            ) as status:
+                result = func(*args, **kwargs)
+                return result
+
+        return wrapper
+
+    return decorator
 
 
 def parse_frontmatter(text: str):

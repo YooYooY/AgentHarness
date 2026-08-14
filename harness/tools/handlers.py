@@ -4,6 +4,7 @@ import subprocess
 from typing import Literal, TypedDict
 
 from config import TEXT_ENCODING, WORKDIR
+from tasks import claim_task, complete_task, create_task, get_task, list_tasks
 from skills import run_load_skill
 from utils import decode_subprocess_output, log, read_text, safe_path
 
@@ -120,6 +121,47 @@ def run_todo_write(todos: Todo) -> str:
     return f"Updated {len(CURRENT_TODOS)} tasks"
 
 
+def run_create_task(
+    subject: str,
+    description: str = "",
+    blockedBy: list[str] | None = None,
+):
+    task = create_task(subject, description, blockedBy)
+    deps = f"(blockedBy:{','.join(blockedBy) if blockedBy else ''})"
+    log.cyan(f"[👾 Create Task] {task.subject} {deps}")
+    return f"task {task.id}:{task.subject}{deps} have been create"
+
+
+def run_list_tasks():
+    tasks = list_tasks()
+    if not tasks:
+        return "Empty task list, you can use [create_task] add task"
+    task_icon_obj = {
+        "pending": "⚪",
+        "in_progress": "🔘",
+        "completed": "🟢",
+    }
+    lines = []
+    for t in tasks:
+        icon = task_icon_obj.get(t.status, "?")
+        deps = f"(blockedBy:){",".join(t.blockedBy) if t.blockedBy else ''}"
+        owner = f"[{t.owner}]" if t.owner else ""
+        lines.append(f" {icon} {t.id}: {t.subject} [{t.status}] {owner}{deps}")
+    return "\n".join(lines)
+
+
+def run_get_task(task_id):
+    return get_task(task_id)
+
+
+def run_claim_task(task_id: str):
+    return claim_task(task_id, owner="agent")
+
+
+def run_complete_task(task_id):
+    return complete_task(task_id)
+
+
 TOOL_HANDLERS = {
     "bash": run_bash,
     "read_file": run_read,
@@ -128,4 +170,8 @@ TOOL_HANDLERS = {
     "glob": run_glob,
     "todo_write": run_todo_write,
     "load_skill": run_load_skill,
+    "create_task": run_create_task,
+    "list_tasks": run_list_tasks,
+    "get_task": run_claim_task,
+    "complete_task": run_complete_task
 }

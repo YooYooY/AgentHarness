@@ -12,7 +12,7 @@ def main():
             query = prompt("You: ")
         except (EOFError, KeyboardInterrupt):
             break
-        if query.strip().lower() in ("q", "quit", "exit", ""):
+        if query.strip().lower() in ("quit", "exit"):
             break
         query = trigger_user_prompt_hooks(query)
         history.append({"role": "user", "content": query})

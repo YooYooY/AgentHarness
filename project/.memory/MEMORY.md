@@ -1,0 +1,5 @@
+- [database_initialized](database_initialized.md) - SQLite database has been created with schema and seed data.
+- [git_repository_state](git_repository_state.md) - Current git status of the project repository.
+- [project_tasks](project_tasks.md) - Task breakdown, IDs, dependencies, and current statuses.
+- [project_workspace](project_workspace.md) - Working directory, notable root contents, and dependencies.
+- [server_and_api_verified](server_and_api_verified.md) - API endpoints and uvicorn startup verified with HTTP tests.

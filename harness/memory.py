@@ -8,7 +8,7 @@ from config import (
     MODEL_ID,
     TEXT_ENCODING,
 )
-from utils import llm_text, message_text, parse_frontmatter, log, read_text
+from utils import llm_text, message_text, parse_frontmatter, log, read_text, with_loading
 from config import client
 
 
@@ -31,6 +31,7 @@ def list_memory_files():
     return result
 
 
+@with_loading("✍️ Select relevent memories...")
 def select_relevant_memories(messages, max_items=5):
     files = list_memory_files()
     if not files:
@@ -137,6 +138,7 @@ def write_memory_file(name, mem_type, description, body):
     return filepath
 
 
+@with_loading("🐾 extract memory...")
 def extract_memories(messages: list):
     dialogue_parts = []
     for msg in messages[-10:]:
@@ -189,6 +191,7 @@ def extract_memories(messages: list):
         pass
 
 
+@with_loading("💼 consolidate memory...")
 def consolidate_memories():
     files = list_memory_files()
     if len(files) < CONSOLIDATE_THRESHOLD:
