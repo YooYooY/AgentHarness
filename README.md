@@ -10,10 +10,10 @@ Implemented:
 - Multi-step task execution
 - Evaluation framework
 
-
 ### Simply Agent Loop
 
-verify: 
+verify:
+
 ```
 cd project
 uv run  ../harness/main.py
@@ -76,7 +76,6 @@ Try these prompts:
 - Create a Python package under `example/demo_pkg` containing `__init__.py`, `utils.py`, and `tests/test_utils.py`
 - Inspect all Python files under example and fix any code style issues.
 
-
 ### Subagent
 
 Break Large Tasks into Small Ones with Clean Context
@@ -96,6 +95,7 @@ Load Only When Needed
 > Inject specialized knowledge only when the task actually needs it.
 
 Try these prompts:
+
 - What skills are available?
 - Load the code-review skill and follow its instructions
 - I need to do a code review -- load the relevant skill first
@@ -107,6 +107,7 @@ Context Will Fill Up
 > compression keeps the conversation usable when the context window gets crowded.
 
 Try these prompts:
+
 - Read the food.md file in the current directory and summarize its contents for me.
 
 ### Memory
@@ -116,6 +117,7 @@ Keep a Layer That Doesn't Lose Details
 > Some facts should survive summarization and future sessions
 
 Try these prompts:
+
 - I prefer using tabs for indentation over spaces. Please keep this in mind.
 - Create a Python file named test.py (observe if the Agent uses tabs).
 - Did I tell you about my preferences before? (Observe if the Agent remembers).
@@ -128,4 +130,30 @@ Assembled at Runtime, Never Hardcoded
 > The system prompt is a generated product of policy, tools, skills, and context.
 
 Try these prompts:
+
 - Read the file README.md (and observe the three sections that are always loaded).
+
+### Error Recovery
+
+Errors Are the Start of a Retry
+
+> A robust harness classifies failures and decides what kind of retry is worthwhile.
+
+Try these prompts:
+
+- Have the Agent generate a very long piece of code and observe whether it automatically resumes writing after truncation (see the `[max_tokens] escalating` log).
+- Continuously read a large number of files to expand the context and observe reactive compaction.
+- If you encounter 429/529 errors, observe the log output for exponential backoff.
+
+### Task System
+
+Break Big Goals into Small Tasks
+
+> A task graph turns vague goals into ordered, observable work.
+
+Try these prompts:
+
+- Create tasks: setup database schema, create API endpoints (depends on schema), write tests (depends on endpoints), write docs (depends on schema)
+- List all tasks and their statuses
+- Claim the first unblocked task and complete it
+- List tasks again — which ones are now unblocked?
