@@ -5,7 +5,7 @@ from typing import Literal, TypedDict
 
 from config import TEXT_ENCODING, WORKDIR
 from skills import run_load_skill
-from utils import decode_subprocess_output, log, safe_path
+from utils import decode_subprocess_output, log, read_text, safe_path
 
 
 def run_bash(command: str) -> str:
@@ -27,7 +27,7 @@ def run_bash(command: str) -> str:
 
 def run_read(path: str, limit: int | None = None) -> str:
     try:
-        lines = safe_path(path).read_text(encoding=TEXT_ENCODING).splitlines()
+        lines = read_text(safe_path(path)).splitlines()
         if limit and lines > len(lines):
             lines = lines[:limit] + [f"...(There are {len(lines)-limit} left)"]
         log.cyan(f"👀 reading content {path}")
@@ -50,7 +50,7 @@ def run_write(path: str, content: str) -> str:
 def run_edit(path: str, old_text: str, new_text: str) -> str:
     try:
         file_path = safe_path(path)
-        text = file_path.read_text()
+        text = read_text(file_path)
         if old_text not in text:
             return log.error(f"Error: text not found")
         file_path.write_text(

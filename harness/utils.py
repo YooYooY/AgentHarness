@@ -1,9 +1,16 @@
 from pathlib import Path
 from rich.console import Console
-from config import WORKDIR
+from config import TEXT_ENCODING, WORKDIR
 
-console = Console()
 
+def read_text(path, encoding=TEXT_ENCODING, errors="replace"):
+    return Path(path).read_text(encoding=encoding, errors=errors)
+
+def write_text(path, content, encoding=TEXT_ENCODING):
+    return Path(path).write_text(content, encoding=encoding)
+
+def open_text(path, mode="w", encoding=TEXT_ENCODING):
+    return Path(path).open(mode, encoding=encoding)
 
 def assistant_message_dict(message) -> dict:
     data = message.model_dump(exclude_none=True)
@@ -35,6 +42,9 @@ def extract_text(content) -> str:
     if isinstance(content, str):
         return content
     return str(content)
+
+
+console = Console()
 
 
 class Logger:

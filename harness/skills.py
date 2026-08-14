@@ -1,5 +1,5 @@
-from config import SKILLS_DIR, TEXT_ENCODING
-from utils import parse_frontmatter, log
+from config import SKILLS_DIR
+from utils import parse_frontmatter, log, read_text
 
 
 SKILL_REGISTRY = {}
@@ -14,7 +14,7 @@ def _scan_skills():
         manifest = dir / "SKILL.md"
         if not manifest.exists():
             continue
-        raw = manifest.read_text(encoding=TEXT_ENCODING, errors="replace")
+        raw = read_text(manifest)
         meta, _body = parse_frontmatter(raw)
         name = meta.get("name", dir.name)
         _title = raw.split("\n")[0].lstrip("#").strip()

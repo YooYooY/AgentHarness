@@ -1,5 +1,4 @@
 import json
-import keyword
 import re
 import time
 from config import (
@@ -9,7 +8,7 @@ from config import (
     MODEL_ID,
     TEXT_ENCODING,
 )
-from utils import llm_text, message_text, parse_frontmatter, log
+from utils import llm_text, message_text, parse_frontmatter, log, read_text
 from config import client
 
 
@@ -18,7 +17,7 @@ def list_memory_files():
     for file in sorted(MEMORY_DIR.glob("*.md")):
         if file.name == "MEMORY.md":
             continue
-        raw = file.read_text(encoding=TEXT_ENCODING, errors="replace")
+        raw = read_text(file)
         meta, body = parse_frontmatter(raw)
         result.append(
             {
@@ -95,7 +94,7 @@ def read_memory_file(filename):
     path = MEMORY_DIR / filename
     if not path.exists():
         return None
-    return path.read_text(encoding=TEXT_ENCODING, errors="replace")
+    return read_text(path)
 
 
 def load_memories(messages: list):
@@ -116,7 +115,7 @@ def _rebuild_index():
     for f in sorted(MEMORY_DIR.glob("*.md")):
         if f.name == "MEMORY.md":
             continue
-        raw = f.read_text(encoding=TEXT_ENCODING, errors="replace")
+        raw = read_text(f)
         meta, body = parse_frontmatter(raw)
         name = meta.get("name", f.stem)
         desc = meta.get("description", body.split("\n")[0][:80])

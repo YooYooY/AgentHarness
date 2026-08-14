@@ -1,6 +1,6 @@
 from config import MEMORY_INDEX, TEXT_ENCODING, WORKDIR
 from skills import SKILL_REGISTRY
-from utils import log
+from utils import log, read_text
 
 
 PROMPT_SECTIONS = {
@@ -55,7 +55,7 @@ def _skills_text():
 def _memory_index_text():
     if not MEMORY_INDEX.exists():
         return ""
-    return MEMORY_INDEX.read_text(encoding=TEXT_ENCODING, errors="replace").strip()
+    return read_text(MEMORY_INDEX).strip()
 
 
 _last_prompt = None
