@@ -14,6 +14,8 @@ PROMPT_SECTIONS = {
         "If a file tool rejects your request, do not bypass it using other methods "
         "such as bash, Python, or Node.js."
         "When the context is too long, you can use the compact tool."
+        "Bash supports the `run_in_background` parameter to run time-consuming commands in the background"
+        "Scheduled tasks can be performed using schedule_cron/list_crons/cancel-cron"
     ),
     "workspace": f"workspace: {WORKDIR}",
     "skill": "Use load_skill to get full details when needed.",

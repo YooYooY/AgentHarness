@@ -4,6 +4,7 @@ import subprocess
 from typing import Literal, TypedDict
 
 from config import TEXT_ENCODING, WORKDIR
+from cron import schedule_cron
 from tasks import (
     claim_task,
     complete_task,
@@ -173,6 +174,13 @@ def run_delete_task(task_id):
     return delete_task(task_id)
 
 
+def run_schedule_cron(
+    cron: str, prompt: str, recurring: bool = True, durable: bool = True
+):
+    result = schedule_cron(cron, prompt, recurring, durable)
+    return f"Already run schedule cron {result.id}: {cron}-> {prompt}"
+
+
 TOOL_HANDLERS = {
     "bash": run_bash,
     "read_file": run_read,
@@ -186,4 +194,5 @@ TOOL_HANDLERS = {
     "get_task": run_claim_task,
     "complete_task": run_complete_task,
     "delete_task": run_delete_task,
+    "sechedule_cron": run_schedule_cron,
 }

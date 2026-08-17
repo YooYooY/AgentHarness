@@ -69,3 +69,5 @@ no apology, no recap. Pick up mid-thought.
 # Task System
 TASKS_DIR = WORKDIR / ".tasks"
 TASKS_DIR.mkdir(exist_ok=True)
+
+DURABLE_PATH = WORKDIR / "./scheduled_tasks.json"

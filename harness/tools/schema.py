@@ -111,6 +111,23 @@ BASE_TOOLS = [
         {"task_id": {"type": "string"}},
         ["task_id"],
     ),
+    _fn_tool(
+        "schedule_cron",
+        "Schedule cron jobs; cron has 5 segments: minute, hour, day, month, week",
+        {
+            "cron": {"type": "string", "description": "5 segments cron expression"},
+            "prompt": {
+                "type": "string",
+                "description": "Messages to injected upon triggering",
+            },
+            "recurring": {
+                "type": "boolean",
+                "description": "True=loop, False=single iteration",
+            },
+            "durable": {"type": "boolean", "description": "True=Persist to disk"},
+        },
+        ["cron", "prompt"],
+    ),
 ]
 
 TOOLS = [
