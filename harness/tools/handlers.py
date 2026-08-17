@@ -36,7 +36,7 @@ def run_bash(command: str) -> str:
 def run_read(path: str, limit: int | None = None) -> str:
     try:
         lines = read_text(safe_path(path)).splitlines()
-        if limit and lines > len(lines):
+        if limit and len(lines) > limit:
             lines = lines[:limit] + [f"...(There are {len(lines)-limit} left)"]
         log.cyan(f"👀 reading content {path}")
         return "\n".join(lines)

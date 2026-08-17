@@ -5,8 +5,12 @@ from config import (
     DEFAULT_MAX_TOKENS,
     ESCALATE_MAX_TOKENS,
     MAX_RECOVERY_RETRIES,
-    MODEL_ID,
     TODO_REMINDER_ROUNDS,
+)
+from background import (
+    collect_background_results,
+    should_run_background,
+    start_background_task,
 )
 from tools.handlers import todo_update_reminder
 from memory import consolidate_memories, extract_memories, load_memories
@@ -20,7 +24,7 @@ from history import (
     tool_result_budget,
 )
 from hooks import trigger_hooks
-from tools.executor import exectue_tool
+from tools.executor import execute_tool
 from llm import RecoveryState, call_llm, is_prompt_too_long_error, with_retry
 from prompt import get_system_prompt
 from utils import assistant_message_dict, log, message_text
@@ -34,6 +38,11 @@ def agent_loop(messages: list):
     global rounds_since_todo
 
     while True:
+        bg_notification = collect_background_results()
+        if bg_notification:
+            messages.append({"role": "user", "content": "\n\n".join(bg_notification)})
+            log.green(f"[Inject]: {len(bg_notification)} background result in messages")
+
         system = get_system_prompt()
 
         memories_content = load_memories(messages)
@@ -154,7 +163,15 @@ def agent_loop(messages: list):
                 )
                 continue
 
-            output = exectue_tool(name, args)
+            if should_run_background(name, args):
+                bg_id = start_background_task(tool_call.id, name, args)
+                output = (
+                    f"background task {bg_id} started in background.\n"
+                    f"command: {args.get('command', '')}\n"
+                    f"result will be delivered via task notification when completed"
+                )
+            else:
+                output = execute_tool(name, args)
             trigger_hooks("PostToolUse", name, args, output)
             messages.append(
                 {"role": "tool", "tool_call_id": tool_call.id, "content": output}

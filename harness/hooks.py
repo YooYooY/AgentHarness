@@ -80,7 +80,7 @@ def log_hook(name: str, args: dict):
 
 
 def tool_output_hook(name: str, args: dict, output: str | None):
-    log.cyan(f"[🪝HOOK PostToolUse] Tool [{name}] output: {output}")
+    log.cyan(f"[🪝HOOK PostToolUse] Tool [{name}] output: {output[:40]}")
     return None
 
 

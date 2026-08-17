@@ -157,3 +157,15 @@ Try these prompts:
 - List all tasks and their statuses
 - Claim the first unblocked task and complete it
 - List tasks again — which ones are now unblocked?
+
+### Background Tasks
+
+Slow Operations Go to the Background
+
+> The agent can keep reasoning while slow work completes elsewhere.
+
+Try these prompts:
+
+- Run pip list in the background and find all Python files in this directory
+- Run npm install (use run_in_background) and while waiting, read package.json
+- Create a task to setup the project, then run pip list in the background

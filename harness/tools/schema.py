@@ -16,10 +16,19 @@ def _fn_tool(
 
 
 BASE_TOOLS = [
+    # _fn_tool(
+    #     "bash",
+    #     "Run a shell command.",
+    #     {"command": {"type": "string"}},
+    #     ["command"],
+    # ),
     _fn_tool(
         "bash",
-        "Run a shell command.",
-        {"command": {"type": "string"}},
+        "Run a shell command, you can use `run_in_background=true` spawn daemon background threads for parallel work",
+        {
+            "command": {"type": "string"},
+            "run_in_background": {"type": "boolean", "default": False},
+        },
         ["command"],
     ),
     _fn_tool(

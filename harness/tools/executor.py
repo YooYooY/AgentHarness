@@ -9,22 +9,17 @@ from tools.schema import BASE_TOOLS
 from utils import assistant_message_dict, extract_text
 
 
-def exectue_tool(name: str, args: dict) -> str:
+def execute_tool(name: str, args: dict) -> str:
     handler = TOOL_HANDLERS.get(name)
     if not handler:
         return f"Unknown tool {name}"
 
-    # sig = inspect.signature(handler)
-    # valid = {
-    #   k: v
-    #   for k, v in args.items()
-    #   if k in sig.parameters
-    # }
-    # return handler(**valid)
-
     try:
         sig = inspect.signature(handler)
-        bound = sig.bind(**args)
+        # only pass args the handler actually accepts, so harness-control
+        # kwargs (e.g. run_in_background) never leak into the handler
+        valid = {k: v for k, v in args.items() if k in sig.parameters}
+        bound = sig.bind(**valid)
     except TypeError as e:
         return log.error(f"Invalid arguments: {e}")
 
@@ -61,7 +56,7 @@ def run_spawn_subagent(description: str):
                 )
                 continue
             output = (
-                exectue_tool(name, args)
+                execute_tool(name, args)
                 if name in TOOL_HANDLERS
                 else f"UNKNOW TOOL: {name}"
             )
