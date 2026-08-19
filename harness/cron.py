@@ -1,9 +1,12 @@
 from dataclasses import asdict, dataclass
+from datetime import datetime
 import json
 import random
 import threading
-from harness.config import DURABLE_PATH
-from utils import log, write_text
+import time
+from config import DURABLE_PATH
+from utils import log, read_text, write_text
+from cron_utils import cron_matchs, cron_validate
 
 
 @dataclass
@@ -17,58 +20,8 @@ class CronJob:
 
 cron_lock = threading.Lock()
 scheduled_jobs: dict[str, CronJob] = {}
-
-
-def _validate_cron_field(field: str, low: int, high: int):
-    if field == "*":
-        return None
-    if field.startswith("*/"):
-        step_str = field[2:]
-        if not step_str.isdigit():
-            return f"Invalid step size:{field}"
-        if int(step_str) <= 0:
-            return f"Step size must be greater than 0:{field}"
-        return None
-    if "," in field:  # 1,5,8
-        for part in field.split(","):
-            err = _validate_cron_field(part.strip(), low, high)
-            if err:
-                return err
-        return None
-    if "-" in field:  # 1-5
-        parts = field.split("-", 1)
-        if not parts[0].isdigit() or not parts[1].isdigit():
-            return f"Invalid range:{field}"
-        a, b = int(parts[0]), int(parts[1])
-        if a < low or a > high or b < low or b > high:
-            return f"range {field} excessive {low}-{high}"
-        if a > b:
-            return f"The starting value of the range must be less than the ending value:{field}"
-    if not field.isdigit():
-        return f"Invalid filed:{field}"
-    val = int(field)
-    if val < low or val > high:
-        return f"value: {val} excessive {low}-{high}"
-    return None
-
-
-def validate_cron(cron_expr: str):
-    fileds = cron_expr.strip().split()
-    if len(fileds) != 5:
-        return f"cron require 5 fileds, currently passes {len(fileds)} "
-    bounds = [
-        (0, 59),
-        (0, 23),
-        (1, 31),
-        (1, 12),
-        (0, 6),
-    ]
-    names = ["minute", "hour", "day", "month", "week"]
-    for field, (low, high), name in zip(fileds, bounds, names):
-        err = _validate_cron_field(field, low, high)
-        if err:
-            return f"{name}: {err}"
-    return None
+cron_queue: list[CronJob] = []
+_last_fired: dict[str, str] = {}
 
 
 def save_durable_jobs():
@@ -77,11 +30,11 @@ def save_durable_jobs():
 
 
 def schedule_cron(cron: str, prompt: str, recurring: bool, durable: bool):
-    err = validate_cron(cron)
+    err = cron_validate(cron)
     if err:
         return err
     job = CronJob(
-        id=f"cron_{random.randint(0, 0,999999):06d}",
+        id=f"cron_{random.randint(0, 999999):06d}",
         cron=cron,
         prompt=prompt,
         recurring=recurring,
@@ -94,3 +47,92 @@ def schedule_cron(cron: str, prompt: str, recurring: bool, durable: bool):
         save_durable_jobs()
     log.yellow(f"[⏰ Register schedule task cron] {job.id} {cron} -> {prompt}")
     return job
+
+
+def load_durable_jobs():
+    if not DURABLE_PATH.exists():
+        return
+    jobs = json.loads(read_text(DURABLE_PATH))
+    for job in jobs:
+        job = CronJob(**job)
+        err = cron_validate(job.cron)
+        if err:
+            log.error(f"[⏰ Cron job invalid] {job.id}: {err}")
+            continue
+        scheduled_jobs[job.id] = job
+    valid_jobs = [job for job in jobs if job["id"] in scheduled_jobs]
+    if valid_jobs:
+        log.info(f"[⏰ Cron job load] loaded {len(valid_jobs)} durable cron tasks")
+
+
+def cron_scheduler_loop():
+    while True:
+        time.sleep(1)
+        now = datetime.now()
+        minute_mark = now.strftime("%Y-%m-%d %H:%M")
+        with cron_lock:
+            for job in list(scheduled_jobs.values()):
+                if cron_matchs(job.cron, now):
+                    if _last_fired.get(job.id) != minute_mark:
+                        cron_queue.append(job)
+                        _last_fired[job.id] = minute_mark
+                        # log.info(f"[⏰ Cron trigger] {job.id}->{job.prompt}")
+                    if not job.recurring:
+                        scheduled_jobs.pop(job.id, None)
+                        if job.durable:
+                            save_durable_jobs()
+
+
+def start_cron_scheduler():
+    load_durable_jobs()
+    threading.Thread(target=cron_scheduler_loop, daemon=True).start()
+
+
+def has_cron_queue():
+    with cron_lock:
+        return bool(cron_queue)
+
+
+def _queue_processor_loop(dispatch_fn, agent_lock):
+    while True:
+        time.sleep(0.2)
+
+        if not has_cron_queue():
+            continue
+
+        if not agent_lock.acquire(blocking=False):
+            continue
+
+        try:
+            if not has_cron_queue():
+                continue
+            # log.info(f"[⏰ Cron Queue Processor] Send Cron Task")
+            dispatch_fn()
+        finally:
+            agent_lock.release()
+
+
+def start_queue_processor(run_agent_run_locked, agent_lock):
+    threading.Thread(
+        target=_queue_processor_loop,
+        args=(run_agent_run_locked, agent_lock),
+        daemon=True,
+    ).start()
+    log.info("⏰ Cron Queue Processor Start")
+
+
+def consume_cron_queue():
+    with cron_lock:
+        fired = list(cron_queue)
+        cron_queue.clear()
+    return fired
+
+
+def cancel_cron(job_id):
+    with cron_lock:
+        job = scheduled_jobs.pop(job_id, None)
+    if not job:
+        return log.error(f"Cron job {job_id} Not Found")
+    if job.durable:
+        save_durable_jobs()
+    return log.info(f"[Cron job cancel] {job_id}")

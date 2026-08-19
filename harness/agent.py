@@ -12,6 +12,7 @@ from background import (
     should_run_background,
     start_background_task,
 )
+from cron import consume_cron_queue
 from tools.handlers import todo_update_reminder
 from memory import consolidate_memories, extract_memories, load_memories
 from history import (
@@ -38,6 +39,18 @@ def agent_loop(messages: list):
     global rounds_since_todo
 
     while True:
+
+        # consume cron job
+        fired = consume_cron_queue()
+        for job in fired:
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"[Cron Job Execute]: {job.prompt}",
+                }
+            )
+            log.info(f"[⏰ inject cron schedule] {job.prompt}")
+
         bg_notification = collect_background_results()
         if bg_notification:
             messages.append({"role": "user", "content": "\n\n".join(bg_notification)})

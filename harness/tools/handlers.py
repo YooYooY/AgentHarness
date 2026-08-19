@@ -4,7 +4,7 @@ import subprocess
 from typing import Literal, TypedDict
 
 from config import TEXT_ENCODING, WORKDIR
-from cron import schedule_cron
+from cron import cancel_cron, schedule_cron, cron_lock, scheduled_jobs
 from tasks import (
     claim_task,
     complete_task,
@@ -178,7 +178,26 @@ def run_schedule_cron(
     cron: str, prompt: str, recurring: bool = True, durable: bool = True
 ):
     result = schedule_cron(cron, prompt, recurring, durable)
+    if isinstance(result, str):
+        return result
     return f"Already run schedule cron {result.id}: {cron}-> {prompt}"
+
+
+def run_list_crons():
+    with cron_lock:
+        jobs = list(scheduled_jobs.values())
+    if not jobs:
+        return "empty cron job, use `schedule_cron` to add"
+    lines = []
+    for job in jobs:
+        tag = "recurring" if job.recurring else "one-shot"
+        dur = "durable" if job.durable else "session-only"
+        lines.append(f"- {job.id}: {job.cron} {job.prompt} {tag} {dur}")
+    return "\n".join(lines)
+
+
+def run_cancel_cron(job_id):
+    return cancel_cron(job_id)
 
 
 TOOL_HANDLERS = {
@@ -191,8 +210,11 @@ TOOL_HANDLERS = {
     "load_skill": run_load_skill,
     "create_task": run_create_task,
     "list_tasks": run_list_tasks,
-    "get_task": run_claim_task,
+    "get_task": run_get_task,
+    "claim_task": run_claim_task,
     "complete_task": run_complete_task,
     "delete_task": run_delete_task,
-    "sechedule_cron": run_schedule_cron,
+    "schedule_cron": run_schedule_cron,
+    "list_crons": run_list_crons,
+    "cancel_cron": run_cancel_cron,
 }

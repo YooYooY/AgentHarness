@@ -128,6 +128,13 @@ BASE_TOOLS = [
         },
         ["cron", "prompt"],
     ),
+    _fn_tool("list_crons", "List the registered Cron jobs", {}, []),
+    _fn_tool(
+        "cancel_cron",
+        "Cancel cron job by ID",
+        {"job_id": {"type": "string", "description": "job id"}},
+        ["job_id"],
+    ),
 ]
 
 TOOLS = [

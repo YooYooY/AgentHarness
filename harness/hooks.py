@@ -85,7 +85,7 @@ def tool_output_hook(name: str, args: dict, output: str | None):
 
 
 def large_output_hook(name: str, args: dict, output):
-    if len(str(output)) > 100000:
+    if len(str(output)) > 1000000:
         log.info(
             f"[🪝HOOK PostToolUse]  ⚠️ {name} Large output from {name}, size = {len(str(output))}"
         )
