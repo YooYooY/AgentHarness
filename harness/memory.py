@@ -66,7 +66,7 @@ def select_relevant_memories(messages, max_items=5):
             max_tokens=200,
         )
         text = llm_text(response)
-        match = re.reach(r"\[.*\]", text, re.DOTALL)
+        match = re.search(r"\[.*\]", text, re.DOTALL)
         if match:
             indices = json.loads(match.group())
             selected = []
